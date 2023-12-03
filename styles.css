@@ -1,0 +1,40 @@
+* {
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+#root {
+  /* display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  height: 100vh;
+  column-gap: 2rem; */
+}
+
+.view-box {
+  /* height: 50vh;
+  width: 40vw; */
+}
+
+.view-box-image {
+  width: 250px;
+  height: 288px;
+  object-fit: contain;
+  background-color: yellow;
+}
+
+#target-image {
+  /* width: 250px; */
+  /* height: 288px;
+  border: 1px solid black; */
+  /* width: 100%; */
+  /* object-fit: contain; */
+}
+
+#current-image {
+  /* border: 1px solid black;
+  width: 250px;
+  height: 288px; */
+}
+
