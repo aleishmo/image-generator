@@ -40,6 +40,9 @@ export class Organism {
     })
 
     context.globalAlpha = 1
+  }
 
+  toByteArray(): Uint8ClampedArray {
+    return new Uint8ClampedArray([...this.circles.flatMap((circle) => [...circle.toByteArray()])])
   }
 }

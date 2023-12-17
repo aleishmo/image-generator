@@ -31,3 +31,5 @@ organism.render({
   width: targetImageElement.clientWidth,
   height: targetImageElement.clientHeight
 })
+
+// console.log(organism.toByteArray())
