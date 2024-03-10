@@ -12,19 +12,19 @@ currentImageCanvasElement.style.height = `${targetImageElement.clientHeight}px`
 
 const organism = new Organism(5)
 
-console.log('currentImageCanvasElement:', currentImageCanvasElement)
-
 const context = currentImageCanvasElement.getContext("2d")
 if (!context) {
   throw new Error('Could not get the context')
 }
 
 // organism.circles = [
-//   new Circle(new Color(1, 0, 0, 1), 1, 0, 0),
-//   new Circle(new Color(0, 1, 0, 1), 1, 1, 0),
-//   new Circle(new Color(0, 0, 1, 1), 1, 0, 1),
-//   new Circle(new Color(0, 0, 0, 1), 1, 1, 1)
+//   new Circle(new Color(255, 0, 0, 255), 255, 0, 0),
+//   new Circle(new Color(0, 255, 0, 255), 255, 255, 0),
+//   new Circle(new Color(0, 0, 255, 255), 255, 0, 255),
+//   new Circle(new Color(0, 0, 0, 255), 255, 255, 255)
 // ]
+
+console.log(organism.circles[0].color.toString())
 
 organism.render({
   context,

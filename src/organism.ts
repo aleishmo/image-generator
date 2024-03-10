@@ -22,9 +22,9 @@ export class Organism {
     context.clearRect(0, 0, width, height)
 
     this.circles.forEach((circle) => {
-      const x = circle.x * width
-      const y = circle.y * height
-      const radius = circle.radius * (width * .25)
+      const x = circle.x * width / 255
+      const y = circle.y * height / 255
+      const radius = circle.radius * (width * .25) / 255
 
       context.save()
       try {
@@ -32,7 +32,7 @@ export class Organism {
         context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI)
         context.closePath()
         context.fillStyle = circle.color.toString()
-        context.globalAlpha = circle.color.opacity
+        context.globalAlpha = circle.color.opacity / 255
         context.fill()
       } finally {
         context.restore()
