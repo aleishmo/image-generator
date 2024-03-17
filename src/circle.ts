@@ -1,5 +1,6 @@
 import { Color } from './color.js'
 import { getRandomUnsignedByte } from './getRandomUnsignedByte.js'
+import { ByteArrayReader } from './byteArrayReader.js'
 
 export class Circle {
   constructor(
@@ -24,5 +25,14 @@ export class Circle {
 
   toByteArray(): Uint8ClampedArray {
     return new Uint8ClampedArray([this.radius, this.x, this.y, ...this.color.toByteArray()])
+  }
+
+  static fromReader(reader: ByteArrayReader) {
+    const radius = reader.readByte()
+    const x = reader.readByte()
+    const y = reader.readByte()
+    const color = Color.fromReader(reader)
+    const circle = new Circle(color, radius, x, y)
+    return circle
   }
 }

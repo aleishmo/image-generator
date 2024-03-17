@@ -1,6 +1,15 @@
 import { Organism } from './organism.js'
+import { getMutatedOrganism } from './getMutatedOrganism.js'
 
 const ORGANSIMS_TO_SELECT_PERCENTAGE = 0.15
+
+type ProgressOptions = {
+  generation: number
+  fittestOrganism: Organism
+  fitness: number
+}
+
+type ProgressHandler = (options: ProgressOptions) => void
 
 export type SimulationStartOptions = {
   populationSize: number
@@ -8,17 +17,29 @@ export type SimulationStartOptions = {
   organismCircleCount: number
   targetImage: HTMLImageElement
   maxGenerations: number
+  onProgress: ProgressHandler
 }
 
 export class Simulation {
-  private targetImage: HTMLImageElement
+  private targetImage: HTMLImageElement | undefined
   private targetCanvas = document.createElement('canvas')
   private targetContext = this.targetCanvas.getContext('2d')
-  private targetPixels: Uint8ClampedArray
+  private targetPixels: Uint8ClampedArray | undefined
   private population: Organism[] = []
+  private workingCanvas = document.createElement('canvas')
+  private workingContext = this.workingCanvas.getContext('2d')
+  private generation = 0
+  private populationSize = 0
+  private maxGenerations = 0
+  private selectCount = 0
+  private mutationChance = 0
+  private onProgress!: ProgressHandler
   
   start(options: SimulationStartOptions) {
+    if (!this.targetContext) throw new Error('Could not get context for target image')
+
     this.targetImage = options.targetImage
+    this.onProgress = options.onProgress
 
     // Initialize the population by creating populationSize of organisms
     for (let index = 0; index < options.populationSize; index++) {
@@ -26,39 +47,67 @@ export class Simulation {
       this.population.push(organism)
     }
 
-    if (!this.targetContext) throw new Error('Could not get context for target image')
-
     this.targetCanvas.width = this.targetImage.width
     this.targetCanvas.height = this.targetImage.height
     this.targetContext.drawImage(this.targetImage, 0, 0, this.targetImage.width, this.targetImage.height)
     this.targetPixels = this.targetContext.getImageData(0, 0, this.targetCanvas.width, this.targetCanvas.height).data
     
-    const selectCount = Math.ceil(this.population.length * ORGANSIMS_TO_SELECT_PERCENTAGE)
+    this.selectCount = Math.ceil(this.population.length * ORGANSIMS_TO_SELECT_PERCENTAGE)
+
+    this.generation = 0
+    this.maxGenerations = options.maxGenerations
+    this.populationSize = options.populationSize
+    this.mutationChance = options.mutationChance
+
+    setTimeout(() => this.generateNextGeneration(), 1)
+  }
+
+  private generateNextGeneration() {
+    if (this.generation > this.maxGenerations) return
+
+    // Measure the fitness of each organism ...
+    const fitnesses = this.population.map((organism) => this.getFitness(organism))
+    this.updateProgress(fitnesses, this.generation)
+
+    this.generation++
     
-    for (let generation = 1; generation <= options.maxGenerations; generation++) {
-      // Measure the fitness of each organism ...
-      const fitnesses = this.population.map((organism) => this.getFitness(organism))
-      
-      // Select the best organisms to reproduce ...
-      const organismsToReproduce = this.getRandomOrganismIndices(fitnesses, selectCount)
+    // Select the organisms to reproduce ...
+    const organismIndicesToReproduce = this.getRandomOrganismIndices(fitnesses, this.selectCount)
 
-      // Reproduce the selected organisms ...
+    const nextGenerationOfOrganisms = organismIndicesToReproduce.map((index) => this.population[index])
+    let organismIndexToReproduce = 0
 
-      // Re-render
+    while (nextGenerationOfOrganisms.length < this.populationSize) {
+      const organismToReproduce = this.population[organismIndicesToReproduce[organismIndexToReproduce % organismIndicesToReproduce.length]]
+      organismIndexToReproduce++
+
+      const newOrganism = getMutatedOrganism(organismToReproduce, this.mutationChance)
+      nextGenerationOfOrganisms.push(newOrganism)
     }
+
+    this.population = nextGenerationOfOrganisms
+
+    setTimeout(() => this.generateNextGeneration(), 1)
+  }
+
+  private updateProgress( fitnesses: number[], generation: number ) {
+    const fitness = fitnesses.reduce((a, b) => Math.max(a, b), 0)
+    const indexOfFittestOrganism = fitnesses.indexOf(fitness)
+    const fittestOrganism = this.population[indexOfFittestOrganism]
+    this.onProgress({ generation, fittestOrganism, fitness })
   }
 
   getFitness(organism: Organism) {
-    const workingCanvas = document.createElement('canvas')
+    if (!this.targetImage || !this.targetPixels) throw new Error('Target image not defined')
+
     const width = this.targetImage.width
     const height = this.targetImage.height
-    workingCanvas.width = width
-    workingCanvas.height = height
+    this.workingCanvas.width = width
+    this.workingCanvas.height = height
 
-    const workingContext = workingCanvas.getContext('2d')
-    if (!workingContext) throw new Error('Could not get context for working image')
-    organism.render({ context: workingContext, width, height })
-    const organismPixels = workingContext.getImageData(0, 0, workingCanvas.width, workingCanvas.height).data
+    if (!this.workingContext) throw new Error('Could not get context for working image')
+    organism.render({ context: this.workingContext, width, height })
+    const organismPixels = this.workingContext.getImageData(0, 0, this.workingCanvas.width, this.workingCanvas.height).data
 
     let totalDifference = 0
 
@@ -74,7 +123,6 @@ export class Simulation {
   getRandomOrganismIndices(fitnessLevels: number[], count: number): number[] {
     const totalFitness = fitnessLevels.reduce((sum, fitness) => sum + fitness, 0);
     const probabilities = fitnessLevels.map(fitness => fitness / totalFitness);
-
     const selectedOrganisms: number[] = [];
     
     for (let i = 0; i < count; i++) {

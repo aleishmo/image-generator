@@ -1,5 +1,6 @@
 import { getRandomUnsignedByte } from './getRandomUnsignedByte.js'
 import { assertIsUnsignedByte } from './assertIsUnsignedByte.js'
+import { ByteArrayReader } from './byteArrayReader.js'
 
 export class Color {
   constructor(
@@ -28,11 +29,11 @@ export class Color {
     return new Uint8ClampedArray([this.r, this.g, this.b, this.opacity])
   }
 
-  static fromByteArray(bytes: Uint8ClampedArray) {
-    const r = bytes[0]
-    const g = bytes[1]
-    const b = bytes[2]
-    const a = bytes[3]
+  static fromReader(reader: ByteArrayReader) {
+    const r = reader.readByte()
+    const g = reader.readByte()
+    const b = reader.readByte()
+    const a = reader.readByte()
     return new Color(r, g, b, a)
   }
 }

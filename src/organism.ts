@@ -1,4 +1,5 @@
 import { Circle } from './circle.js';
+import { ByteArrayReader } from './byteArrayReader.js';
 
 export type OrganismRenderOptions = {
   context: CanvasRenderingContext2D
@@ -44,5 +45,13 @@ export class Organism {
 
   toByteArray(): Uint8ClampedArray {
     return new Uint8ClampedArray([...this.circles.flatMap((circle) => [...circle.toByteArray()])])
+  }
+
+  static fromReader(reader: ByteArrayReader) {
+    const organism = new Organism(0)
+    while (!reader.hasReachedEnd()) {
+      organism.circles.push(Circle.fromReader(reader))
+    }
+    return organism
   }
 }
