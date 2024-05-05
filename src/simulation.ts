@@ -1,5 +1,6 @@
 import { Organism } from './organism.js'
 import { getMutatedOrganism } from './getMutatedOrganism.js'
+import { Circle } from './circle.js'
 
 const ORGANSIMS_TO_SELECT_PERCENTAGE = 0.15
 
@@ -14,7 +15,7 @@ type ProgressHandler = (options: ProgressOptions) => void
 export type SimulationStartOptions = {
   populationSize: number
   mutationChance: number
-  organismCircleCount: number
+  getOrganismCircleCount: (generation: number) => number
   targetImage: HTMLImageElement
   maxGenerations: number
   onProgress: ProgressHandler
@@ -33,6 +34,7 @@ export class Simulation {
   private maxGenerations = 0
   private selectCount = 0
   private mutationChance = 0
+  private getOrganismCircleCount!: (generation: number) => number
   private onProgress!: ProgressHandler
   
   start(options: SimulationStartOptions) {
@@ -40,10 +42,11 @@ export class Simulation {
 
     this.targetImage = options.targetImage
     this.onProgress = options.onProgress
+    this.getOrganismCircleCount = options.getOrganismCircleCount
 
     // Initialize the population by creating populationSize of organisms
     for (let index = 0; index < options.populationSize; index++) {
-      const organism = new Organism(options.organismCircleCount)
+      const organism = new Organism(this.getOrganismCircleCount(this.generation))
       this.population.push(organism)
     }
 
@@ -82,6 +85,9 @@ export class Simulation {
       organismIndexToReproduce++
 
       const newOrganism = getMutatedOrganism(organismToReproduce, this.mutationChance)
+      while (newOrganism.circles.length < this.getOrganismCircleCount(this.generation)) {
+        newOrganism.circles.push(new Circle())
+      }
       nextGenerationOfOrganisms.push(newOrganism)
     }
 

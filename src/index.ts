@@ -25,12 +25,12 @@ if (!context) {
 }
 
 const simulation = new Simulation()
-const maxGenerations = 10000
+const maxGenerations = 1000
 
 simulation.start({
-  populationSize: 100,
-  mutationChance: 0.001,
-  organismCircleCount: 20,
+  populationSize: 200,
+  mutationChance: 0.01,
+  getOrganismCircleCount: (generation) => 1 + Math.round(generation / 30),
   targetImage: targetImageElement,
   maxGenerations,
   onProgress: ({ fittestOrganism, fitness, generation }) => {
@@ -41,7 +41,8 @@ simulation.start({
     })
     getElementByIdOrError('fitness').innerText = fitness.toString()
     getElementByIdOrError('generation').innerText = generation.toString()  
-    getElementByIdOrError('maxGenerations').innerText = maxGenerations.toString()  
+    getElementByIdOrError('maxGenerations').innerText = maxGenerations.toString()
+    getElementByIdOrError('circleCount').innerText = fittestOrganism.circles.length.toString()
   }
 })
 

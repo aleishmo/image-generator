@@ -25,7 +25,7 @@ export class Organism {
     this.circles.forEach((circle) => {
       const x = circle.x * width / 255
       const y = circle.y * height / 255
-      const radius = circle.radius * (width * .25) / 255
+      const radius = circle.radius * (width * .5) / 255
 
       context.save()
       try {
@@ -53,5 +53,13 @@ export class Organism {
       organism.circles.push(Circle.fromReader(reader))
     }
     return organism
+  }
+
+  clone() {
+    const newOrganism = new Organism(0)
+    for (const circle of this.circles) {
+      newOrganism.circles.push(new Circle(circle.color, circle.radius, circle.x, circle.y))
+    }
+    return newOrganism
   }
 }
